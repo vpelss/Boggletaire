@@ -1,0 +1,290 @@
+
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+  <meta charset="UTF-8">
+  
+  
+  
+
+  <title>CodePen - Boggletaire JS</title>
+
+    <link rel="canonical" href="https://codepen.io/vpelss/pen/LYaVaLK">
+  
+  
+  
+  
+<style>
+#board {
+  width: 88vmin;
+  height: 88vmin;
+}
+
+td {
+  vertical-align: top;
+}
+
+.letter {
+  border-style: solid;
+  border-width: 1vmin;
+  width: 20vmin;
+  height: 20vmin;
+  display: inline-block;
+  font-size: 20vmin;
+  line-height: 1em;
+  text-align: center;
+}
+
+textarea {
+  width: 15vmin;
+}
+
+.zero {
+}
+
+.ninety {
+  transform: rotate(90deg);
+}
+
+.oneeighty {
+  transform: rotate(180deg);
+}
+
+.twoseventy {
+  transform: rotate(270deg);
+}
+</style>
+
+  
+  
+  
+</head>
+
+<body>
+  <h4>Boggletaire</h4>
+
+<span>Time: </span><span id="countdown"></span> <button id="alarm">Allow Alarm</button>
+
+<table>
+  <tr>
+    <td>
+      <div id="board"></div>
+    </td>
+    <td>
+      <textarea rows="10" id="textarea"></textarea><br>
+      <button id="enter">Enter</button>
+      <p></p>
+      <button id="rotateright">+</button>&nbsp;<button id="rotateleft">-</button>
+      <p></p>
+      <button id="backspace">Backspace</button>
+
+    </td>
+  </tr>
+</table>
+<button id="new">New</button>
+  
+      <script id="rendered-js" >
+//let dice = [];
+let dice_old_string =
+  "AACIOT,AHMORS,EGKLUY,ABILTY,ACDEMP,EGINTV,GILRUW,ELPSTU,DENOSW,ACELRS,ABJMOQ,EEFHIY,EHINPS,DKNOTU,ADENVZ,BIFORX";
+//let board = DIM([4,4], '');
+let rotation_array = ["zero", "ninety", "oneeighty", "twoseventy"];
+let rolled_dice = [];
+let dice_string = dice_old_string;
+let tictok;
+let board_rotation;
+
+let new_button = document.getElementById("new");
+new_button.onclick = Start;
+
+Start();
+
+function Start() {
+  board_rotation = 0;
+  let el = document.getElementById("board");
+  el.classList.add(rotation_array[board_rotation]);
+  Roll();
+  // Set the target time, 3 min
+  time_up = Date.now() + 1000 * 3 * 60 + 1000;
+  tictok = setInterval(Timer, 1000);
+}
+
+function Roll() {
+  //roll dice
+  dice_string.split(",").forEach(function (letters) {
+    //for each die
+    let die_faces = letters.split("");
+    //roll die
+    rolled_die = Array_Shuffle(die_faces).shift();
+    rolled_dice.push(rolled_die);
+  });
+
+  //reorder dice
+  Array_Shuffle(rolled_dice);
+
+  let board_string = "";
+  //build board
+  for (let y = 0; y <= 3; y++) {
+    board_string += "<div>";
+    for (let x = 0; x <= 3; x++) {
+      let count = y * 4 + x;
+      let letter = rolled_dice.shift();
+      let rand_num = getRandomInt(3);
+      let rotate_class = rotation_array[rand_num];
+      board_string +=
+        "<span class='letter " +
+        rotate_class +
+        "' id='" +
+        count +
+        "'>" +
+        letter;
+      board_string += "</span>";
+    }
+    board_string += "</div>";
+  }
+
+  let el = document.getElementById("board");
+  el.innerHTML = board_string;
+
+  for (let y = 0; y <= 15; y++) {
+    let el = document.getElementById(y);
+    el.onclick = letter_click;
+  }
+}
+
+function letter_click() {
+  let letter = this.innerHTML;
+  let el = document.getElementById("textarea");
+  el.innerHTML = el.innerHTML + letter;
+}
+
+let el_p = document.getElementById("rotateright");
+el_p.onclick = RotateRight;
+function RotateRight() {
+  let el = document.getElementById("board");
+  el.classList.remove(rotation_array[board_rotation]);
+  board_rotation++;
+  if (board_rotation > 3) {
+    board_rotation = 0;
+  }
+  el.classList.add(rotation_array[board_rotation]);
+}
+
+let el_m = document.getElementById("rotateleft");
+el_m.onclick = RotateLeft;
+function RotateLeft() {
+  let el = document.getElementById("board");
+  el.classList.remove(rotation_array[board_rotation]);
+  board_rotation--;
+  if (board_rotation < 0) {
+    board_rotation = 3;
+  }
+  el.classList.add(rotation_array[board_rotation]);
+}
+
+let el_en = document.getElementById("enter");
+el_en.onclick = Enter;
+function Enter() {
+  let letter = "\r\n";
+  let el = document.getElementById("textarea");
+  el.innerHTML = el.innerHTML + letter;
+}
+
+let el_bs = document.getElementById("backspace");
+el_bs.onclick = Backspace;
+function Backspace() {
+  let el = document.getElementById("textarea");
+  str = el.innerHTML;
+  str = str.slice(0, -1);
+  el.innerHTML = str;
+}
+
+function Array_Shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
+}
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+function Timer() {
+  // Get today's date and time
+  let now = Date.now();
+  // Find the distance between now and the count down date
+  let distance = time_up - now;
+  // Time calculations for days, hours, minutes and seconds
+  //let days = Math.floor(distance / (1000 * 60 * 60 * 24));
+  //let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+  let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  // Display the result in the element with id="demo"
+  document.getElementById("countdown").innerHTML = minutes + ":" + seconds;
+  // If the count down is finished, write some text
+  if (distance < 0) {
+    clearInterval(tictok);
+    document.getElementById("countdown").innerHTML = "done";
+    Beep(100, 500, "sine", 100);
+  }
+}
+
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function Beep(volume, frequency, type, duration) {
+  var oscillator = audioCtx.createOscillator();
+  var gainNode = audioCtx.createGain();
+oscillator.connect(gainNode);
+gainNode.connect(audioCtx.destination);
+  gainNode.gain.value = volume;
+  oscillator.frequency.value = frequency;
+  oscillator.type = type;
+  oscillator.start();
+
+  setTimeout(function () {
+    oscillator.stop();
+  }, duration);
+}
+
+document.getElementById("alarm").addEventListener("click", function () {
+  //audioCtx.stop();
+//oscillator.start();
+  //oscillator.stop();
+  oscillator.resume().then(() => {
+    console.log("Playback resumed successfully");
+  });
+ // Beep(100, 500, "sine", 100);
+});
+
+//Beep(100, 500, "sine", 100);
+
+/*
+New Version | Old Version
+   AAEEGN   |   AACIOT
+   ELRTTY   |   AHMORS
+   AOOTTW   |   EGKLUY
+   ABBJOO   |   ABILTY
+   EHRTVW   |   ACDEMP
+   CIMOTV   |   EGINTV
+   DISTTY   |   GILRUW
+   EIOSST   |   ELPSTU
+   DELRVY   |   DENOSW
+   ACHOPS   |   ACELRS
+   HIMNQU   |   ABJMOQ
+   EEINSU   |   EEFHIY
+   EEGHNW   |   EHINPS
+   AFFKPS   |   DKNOTU
+   HLNNRZ   |   ADENVZ
+   DEILRX   |   BIFORX
+   */
+    </script>
+
+  
+</body>
+
+</html>
