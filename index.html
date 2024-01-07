@@ -11,33 +11,38 @@
   <title>CodePen - Boggletaire JS</title>
 
     <link rel="canonical" href="https://codepen.io/vpelss/pen/LYaVaLK">
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   
   
   
 <style>
-#board {
-  width: 88vmin;
-  height: 88vmin;
+* {
+  font-size: 5vmin;
+  font-family: Times New Roman;
 }
 
-td {
-  vertical-align: top;
+.disable-dbl-tap-zoom {
+  touch-action: manipulation;
+}
+
+#board {
+  width: 50vmin;
+  height: 50vmin;
 }
 
 .letter {
   border-style: solid;
   border-width: 1vmin;
-  width: 20vmin;
-  height: 20vmin;
+  width: 10vmin;
+  height: 10vmin;
+  font-size: 10vmin;
   display: inline-block;
-  font-size: 20vmin;
   line-height: 1em;
-  text-align: center;
+  text-align: center; 
 }
 
 textarea {
-  width: 15vmin;
+  height: 40vmin;
 }
 
 .zero {
@@ -62,36 +67,39 @@ textarea {
 </head>
 
 <body>
+  <center class="disable-dbl-tap-zoom">
   <h4>Boggletaire</h4>
-
-<span>Time: </span><span id="countdown"></span> <button id="alarm">Allow Alarm</button>
-
-<table>
-  <tr>
-    <td>
-      <div id="board"></div>
-    </td>
-    <td>
-      <textarea rows="10" id="textarea"></textarea><br>
-      <button id="enter">Enter</button>
-      <p></p>
-      <button id="rotateright">+</button>&nbsp;<button id="rotateleft">-</button>
-      <p></p>
-      <button id="backspace">Backspace</button>
-
-    </td>
-  </tr>
-</table>
-<button id="new">New</button>
+  <button id="new">New</button> &nbsp;
+  <input type="radio" id="classic" name="letterlist" value="classic" CHECKED="1">
+  <label for="classic">Classic dice</label>
+  <input type="radio" id="newer" name="letterlist" value="newer">
+  <label for="newer">Newer dice</label>
+  &nbsp;
+  <span>Time: </span><span id="countdown"></span>
+  &nbsp;
+  <input type="checkbox" id="alarm" name="alarm" value="alarm">
+  <label for="alarm">Allow alarm</label>
+  <table>
+    <tr>
+      <td>
+        <div id="board"></div>
+        <center>
+          <button id="rotateright">+</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button id="rotateleft">-</button>
+        </center>
+      </td>
+      <td>
+        <textarea id="textarea"></textarea>
+        <p></p>
+        <button id="enter">Enter</button> &nbsp; <button id="backspace">Backspace</button>
+      </td>
+    </tr>
+  </table>
+</center>
   
       <script id="rendered-js" >
-//let dice = [];
-let dice_old_string =
-  "AACIOT,AHMORS,EGKLUY,ABILTY,ACDEMP,EGINTV,GILRUW,ELPSTU,DENOSW,ACELRS,ABJMOQ,EEFHIY,EHINPS,DKNOTU,ADENVZ,BIFORX";
-//let board = DIM([4,4], '');
+let dice_string;
 let rotation_array = ["zero", "ninety", "oneeighty", "twoseventy"];
 let rolled_dice = [];
-let dice_string = dice_old_string;
 let tictok;
 let board_rotation;
 
@@ -101,12 +109,24 @@ new_button.onclick = Start;
 Start();
 
 function Start() {
+  document.getElementById("textarea").value = "";
+   let dice_old_string =
+    "AACIOT,AHMORS,EGKLUY,ABILTY,ACDEMP,EGINTV,GILRUW,ELPSTU,DENOSW,ACELRS,ABJMOQ,EEFHIY,EHINPS,DKNOTU,ADENVZ,BIFORX";
+  let dice_new_string =
+    "AAEEGN,ELRTTY,AOOTTW,ABBJOO,EHRTVW,CIMOTV,DISTTY,EIOSST,DELRVY,ACHOPS,HIMNQU,EEINSU,EEGHNW,AFFKPS,HLNNRZ,DEILRX";
+  if (document.getElementById("classic").checked) {
+    dice_string = dice_old_string;
+  } else {
+    dice_string = dice_new_string;
+  }
+
   board_rotation = 0;
   let el = document.getElementById("board");
   el.classList.add(rotation_array[board_rotation]);
   Roll();
   // Set the target time, 3 min
   time_up = Date.now() + 1000 * 3 * 60 + 1000;
+  //time_up = Date.now() + 1000 * 5 + 1000;
   tictok = setInterval(Timer, 1000);
 }
 
@@ -156,7 +176,8 @@ function Roll() {
 function letter_click() {
   let letter = this.innerHTML;
   let el = document.getElementById("textarea");
-  el.innerHTML = el.innerHTML + letter;
+  el.value =  el.value + letter;
+  el.scrollTop=el.scrollHeight;
 }
 
 let el_p = document.getElementById("rotateright");
@@ -188,16 +209,16 @@ el_en.onclick = Enter;
 function Enter() {
   let letter = "\r\n";
   let el = document.getElementById("textarea");
-  el.innerHTML = el.innerHTML + letter;
+  el.value = el.value + letter;
 }
 
 let el_bs = document.getElementById("backspace");
 el_bs.onclick = Backspace;
 function Backspace() {
   let el = document.getElementById("textarea");
-  str = el.innerHTML;
+  str = el.value;
   str = str.slice(0, -1);
-  el.innerHTML = str;
+  el.value = str;
 }
 
 function Array_Shuffle(array) {
@@ -220,17 +241,16 @@ function Timer() {
   // Find the distance between now and the count down date
   let distance = time_up - now;
   // Time calculations for days, hours, minutes and seconds
-  //let days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  //let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
   let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-  // Display the result in the element with id="demo"
   document.getElementById("countdown").innerHTML = minutes + ":" + seconds;
   // If the count down is finished, write some text
   if (distance < 0) {
     clearInterval(tictok);
     document.getElementById("countdown").innerHTML = "done";
-    Beep(100, 500, "sine", 100);
+    if (document.getElementById("alarm").checked) {
+      Beep(100, 500, "sine", 100);
+    }
   }
 }
 
@@ -239,8 +259,8 @@ let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function Beep(volume, frequency, type, duration) {
   var oscillator = audioCtx.createOscillator();
   var gainNode = audioCtx.createGain();
-oscillator.connect(gainNode);
-gainNode.connect(audioCtx.destination);
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
   gainNode.gain.value = volume;
   oscillator.frequency.value = frequency;
   oscillator.type = type;
@@ -251,17 +271,9 @@ gainNode.connect(audioCtx.destination);
   }, duration);
 }
 
-document.getElementById("alarm").addEventListener("click", function () {
-  //audioCtx.stop();
-//oscillator.start();
-  //oscillator.stop();
-  oscillator.resume().then(() => {
-    console.log("Playback resumed successfully");
-  });
- // Beep(100, 500, "sine", 100);
+document.getElementById("alarm").addEventListener("click", function(){
+  oscillator.resume();
 });
-
-//Beep(100, 500, "sine", 100);
 
 /*
 New Version | Old Version
